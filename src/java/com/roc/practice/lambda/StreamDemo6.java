@@ -21,7 +21,7 @@ public class StreamDemo6 {
         Map<Boolean, List<Student>> collect2 = list.stream().collect(Collectors.partitioningBy(a -> a.getAge() > 1));
         System.out.println(collect2);
         //分组
-        Map<Integer, List<Student>> collect3 = list.stream().collect(Collectors.groupingBy(Student::getAge));
+         Map<Integer, List<Student>> collect3 = list.stream().collect(Collectors.groupingBy(Student::getAge));
         System.out.println(collect3.toString());
         //分组统计
         Map<Integer, Long> collect4 = list.stream().collect(Collectors.groupingBy(Student::getAge, Collectors.counting()));
