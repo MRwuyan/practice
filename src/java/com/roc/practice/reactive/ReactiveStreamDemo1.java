@@ -1,6 +1,5 @@
 package com.roc.practice.reactive;
 
-import java.util.Spliterator;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
@@ -19,7 +18,7 @@ public class ReactiveStreamDemo1 {
         Flow.Subscriber<Integer> subscriber = new Flow.Subscriber<>() {
 
             private Flow.Subscription subscription;
-            private Integer i=0;
+            private Integer i = 0;
 
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
@@ -32,11 +31,11 @@ public class ReactiveStreamDemo1 {
             public void onNext(Integer item) {
                 i++;
                 //接受数据，处理
-                System.out.println("接受到数据:"+item);
+                System.out.println("接受到数据:" + item);
                 //处理完调用request请求
                 subscription.request(1);
                 //停止处理请求
-                if (i>=10) {
+                if (i >= 10) {
                     System.out.println("次数够了,停止");
                     subscription.cancel();
                 }
