@@ -18,4 +18,12 @@ public class MethodInfo {
     private HttpMethod method;
     private Map<String,Object> params;
     private Mono<?> body;
+    /**
+     *  返回的是flux还是mono
+     */
+    private Boolean returnFlux;
+    /**
+     * 返回对象的类型
+     */
+    private Class<?> returnElementType;
 }

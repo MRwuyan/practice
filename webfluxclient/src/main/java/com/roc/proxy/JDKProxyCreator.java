@@ -8,13 +8,11 @@ import com.roc.handle.WebClientRestHandle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -49,7 +47,36 @@ public class JDKProxyCreator implements ProxyCreator {
                 extractUrlAndMethod(method, methodInfo);
                 //获取方法参数
                 extractParamAndBody(method, args, methodInfo);
+                //提取 返回对象信息
+                extractReturnInfo(method, methodInfo);
                 return methodInfo;
+            }
+
+            /**
+             * 获取返回对象信息
+             * @param method
+             * @param methodInfo
+             */
+            private void extractReturnInfo(Method method, MethodInfo methodInfo) {
+                //返回flux还是mono
+                //isAssignableFrom判断类型是否是某个子类
+                //instanceof是判断实例是否是某个的子类
+                boolean isFlux = method.getReturnType().isAssignableFrom(Flux.class);
+                methodInfo.setReturnFlux(isFlux);
+                //得到返回对象的实际类型
+                Class<?> extractElementType = extractElementType(method.getGenericReturnType());
+                methodInfo.setReturnElementType(extractElementType);
+            }
+
+            /**
+             * 得到泛型的实际类型
+             * @param genericReturnType
+             * @return
+             */
+            private Class<?> extractElementType(Type genericReturnType) {
+                Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
+
+                return (Class<?>) actualTypeArguments[0];
             }
 
             private void extractParamAndBody(Method method, Object[] args, MethodInfo methodInfo) {
