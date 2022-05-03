@@ -1,4 +1,4 @@
-package com.roc.netty;
+package com.roc.netty.simple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -44,7 +44,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().eventLoop().schedule(() -> {
             try {
                 Thread.sleep(5*1000);
-                ctx.writeAndFlush(Unpooled.copiedBuffer("hello ,唔西迪西,这里是read2", CharsetUtil.UTF_8));
+                ctx.writeAndFlush(Unpooled.copiedBuffer("hello ,唔西迪西,这里是read3", CharsetUtil.UTF_8));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

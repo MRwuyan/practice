@@ -1,4 +1,4 @@
-package com.roc.netty;
+package com.roc.netty.simple;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

@@ -1,4 +1,4 @@
-package com.roc.netty;
+package com.roc.netty.simple;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;

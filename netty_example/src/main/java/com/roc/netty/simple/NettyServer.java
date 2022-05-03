@@ -1,4 +1,4 @@
-package com.roc.netty;
+package com.roc.netty.simple;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -34,6 +34,13 @@ public class NettyServer {
             System.out.println("...服务器 is ready...");
             //绑定一个端口并且同步,生成了一个channelFuture对象
             ChannelFuture channelFuture = bootstrap.bind(6668).sync();
+            channelFuture.addListener((ChannelFutureListener) channelFuture1 -> {
+                if (channelFuture1.isSuccess()) {
+                    System.out.println("监听端口6668成功");
+                } else {
+                    System.out.println("监听6668失败");
+                }
+            });
             //对关闭通道进行监听
             channelFuture.channel().closeFuture().sync();
         }finally {
