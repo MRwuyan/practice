@@ -5,6 +5,8 @@
         <module>webfluxclient</module>
         <module>lambda-example</module>
         <module>netty_example</module>
+        <module>juc</module>
+        <module>Interview</module>
     </modules>
 
     <groupId>com.roc.practice</groupId>
