@@ -253,6 +253,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * than 2 and should be at least 8 to mesh with assumptions in
      * tree removal about conversion back to plain bins upon
      * shrinkage.
+     * 当链表大于8时会转为红黑树
      */
     static final int TREEIFY_THRESHOLD = 8;
 
@@ -268,6 +269,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * (Otherwise the table is resized if too many nodes in a bin.)
      * Should be at least 4 * TREEIFY_THRESHOLD to avoid conflicts
      * between resizing and treeification thresholds.
+     * 链表转为红黑树时会查看数组长度,如果小于64则会扩容
      */
     static final int MIN_TREEIFY_CAPACITY = 64;
 
