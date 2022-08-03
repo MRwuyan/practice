@@ -784,6 +784,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The next table to use; non-null only while resizing.
+     * 扩容时的新数组
      */
     private transient volatile Node<K,V>[] nextTable;
 
@@ -812,6 +813,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The next table index (plus one) to split while resizing.
+     * 扩容下标(+1了)
      */
     private transient volatile int transferIndex;
 
@@ -2552,7 +2554,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
              *      false->数组不一样,被其他线程修改过
              */
             else if (tab == table) {
-                //这个是一个很大的正数
+                //这个是一个很大的正数,最左高位是1*重点
                 int rs = resizeStamp(n);
                 /**
                  * CASE 3.1
@@ -2567,15 +2569,18 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                         sc == rs + MAX_RESIZERS || (nt = nextTable) == null ||
                         transferIndex <= 0)
                         break;
+                    /**
+                     * CASE 3.1.2+
+                     */
                     if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1))
                         transfer(tab, nt);
                 }
                 /**
                  * 前置条件:数组没有在扩容
-                 * CASE 3.2:
+                 * CASE 3.2: 进行扩容
                  * 条件:
-                 *      true->
-                 *      false->
+                 *      true-> 修改数组容量为一个负数成功
+                 *      false->修改失败
                  */
                 else if (U.compareAndSwapInt(this, SIZECTL, sc,
                                              (rs << RESIZE_STAMP_SHIFT) + 2))
@@ -2587,11 +2592,23 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Moves and/or copies the nodes in each bin to new table. See
      * above for explanation.
+     * tab:当前数组 ,nextTab:扩容后的数组
      */
     private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
+        //n:当前数组长度(64
+        //stride:每个线程扩容时负责的长度(16
         int n = tab.length, stride;
+        /**CASE 1
+         * 条件: 如果 CPU 大于 1，控制最少每个线程的处理量为 16 ==> n / 8 / NCPU
+         *      true-> 获取每个线程扩容时负责的最小长度
+         *      false-> 计算出的长度
+         */
         if ((stride = (NCPU > 1) ? (n >>> 3) / NCPU : n) < MIN_TRANSFER_STRIDE)
             stride = MIN_TRANSFER_STRIDE; // subdivide range
+        /**
+         * CASE 2
+         * 条件:如果为空,初始化新数组,容量*2
+         */
         if (nextTab == null) {            // initiating
             try {
                 @SuppressWarnings("unchecked")
@@ -2601,23 +2618,55 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                 sizeCtl = Integer.MAX_VALUE;
                 return;
             }
+            //新数组赋值给全局变量
             nextTable = nextTab;
+            //赋值扩容下标(16,
             transferIndex = n;
         }
+        //新数组长度
         int nextn = nextTab.length;
+        //迁移时的占位数组
         ForwardingNode<K,V> fwd = new ForwardingNode<K,V>(nextTab);
+        //advance:死循环标记位
         boolean advance = true;
+        //是否完成迁移
         boolean finishing = false; // to ensure sweep before committing nextTab
+        //bound: (0,112
         for (int i = 0, bound = 0;;) {
+            //f: 迁移节点
+            //fh: 节点hash
             Node<K,V> f; int fh;
+            /**
+             * CASE 3
+             */
             while (advance) {
+                //nextIndex:迁移下标(128,
+                //nextBound:    (112,
                 int nextIndex, nextBound;
+                /**
+                 * CASE 3.1
+                 * 条件:通过 --i 来控制线程处理区间的推进
+                 *      true:如果 --i > bound 说明区间范围超过线程的处理范围,线程不再该范围内就行推进,修改为false
+                 *      false:说明区间范围还在线程的处理范围,继续往下
+                 */
                 if (--i >= bound || finishing)
                     advance = false;
+                /**
+                 * CASE 3.2
+                 * 条件: 将 nextIndex 赋值为扩容下标
+                 *      true-> 表已被划分完，不再作划分推进，跳出循环
+                 *      false-> 继续划分
+                 */
                 else if ((nextIndex = transferIndex) <= 0) {
                     i = -1;
                     advance = false;
                 }
+                /**
+                 * CASE 3.3 步进往前移
+                 * 条件:
+                 *      true-> 修改 nextIndex成功
+                 *      false-> 修改失败
+                 */
                 else if (U.compareAndSwapInt
                          (this, TRANSFERINDEX, nextIndex,
                           nextBound = (nextIndex > stride ?
@@ -2627,14 +2676,35 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     advance = false;
                 }
             }
+            /**
+             * CASE 4 如果 i < 0 || i >= n || i + n >= nextn ，都属于区间的边界判断
+             * 超过边界则判断是否线程都已执行完毕，其实只有首尾区间的线程会触发到这个判断，
+             * 其他的线程因为 stride < i < 2stride，所以不会触发此判断
+             * 条件1:
+             *
+             */
             if (i < 0 || i >= n || i + n >= nextn) {
                 int sc;
+                /**
+                 * CASE4.1
+                 * 条件:
+                 *      true: 已完成迁移
+                 *      false:未完成
+                 */
                 if (finishing) {
+                    //下个数组置空
                     nextTable = null;
+                    //将当前数组赋值为下个数组
                     table = nextTab;
+                    // 容量改为新的0.75n
                     sizeCtl = (n << 1) - (n >>> 1);
                     return;
                 }
+                /**
+                 * 条件: 容量赋值给sc
+                 *      true: 修改sc成功
+                 *      false: 修改失败
+                 */
                 if (U.compareAndSwapInt(this, SIZECTL, sc = sizeCtl, sc - 1)) {
                     if ((sc - 2) != resizeStamp(n) << RESIZE_STAMP_SHIFT)
                         return;
@@ -6527,6 +6597,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     // Unsafe mechanics
     private static final sun.misc.Unsafe U;
     private static final long SIZECTL;
+    /**
+     * 扩容下标
+     */
     private static final long TRANSFERINDEX;
     private static final long BASECOUNT;
     private static final long CELLSBUSY;
