@@ -802,7 +802,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * when table is null, holds the initial table size to use upon
      * creation, or 0 for default. After initialization, holds the
      * next element count value upon which to resize the table.
-     * 集合容量,(个人感觉容量更贴切一些,表示能容纳多少元素,而长度表示有几个元素
+     * 集合扩容阈值,(个人感觉阈值更贴切一些
      * 0:表示未初始化
      * 正数:未初始化就是初始容量,如果已经初始化,就是扩容阈值(初始容量*0.75)
      * -1:表示数组正在进行初始化
@@ -2686,7 +2686,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             if (i < 0 || i >= n || i + n >= nextn) {
                 int sc;
                 /**
-                 * CASE4.1
+                 * CASE4.1 所有线程已干完活，最后才走这里。
                  * 条件:
                  *      true: 已完成迁移
                  *      false:未完成
@@ -2701,6 +2701,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     return;
                 }
                 /**
+                 * CASE4.1 当前线程已结束扩容，sc-1表示参与扩容线程数-1。
                  * 条件: 容量赋值给sc
                  *      true: 修改sc成功
                  *      false: 修改失败
@@ -2712,24 +2713,62 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     i = n; // recheck before commit
                 }
             }
+            /**
+             *  CASE 5
+             *  前置条件: 标记位是false,且不是边界迁移
+             * 条件: 将数组中的null节点改为ForwardingNode节点
+             *      true:当前节点赋值个f,且为空
+             *      false:当前节点赋值个f,且不为空
+             */
             else if ((f = tabAt(tab, i)) == null)
                 advance = casTabAt(tab, i, null, fwd);
+            /**
+             * CASE 6
+             *  条件: 当前hash值赋值给fh,修改标记位
+             *      true-> 当前节点hash为1,正在迁移
+             *      false-> 当前节点hash不为-1,不是正在迁移
+             */
             else if ((fh = f.hash) == MOVED)
                 advance = true; // already processed
             else {
                 synchronized (f) {
+                    /**
+                     * CASE 7.1
+                     * 加锁继续比较
+                     */
                     if (tabAt(tab, i) == f) {
+                        //lowNode 跟 highNode 缩写
                         Node<K,V> ln, hn;
+                        /**
+                         * CASE 7.2 加锁继续判断当前hash是否大于0
+                         *      true-> 进行扩容
+                         *      false-> 继续往下(可能为二叉树
+                         */
                         if (fh >= 0) {
+                            //runBit:获取hash
                             int runBit = fh & n;
+                            //lastRun:当前节点
+                            //
                             Node<K,V> lastRun = f;
+                            /**
+                             * CASE 7.2.1 当前节点是否只有1个
+                             *      true-> 进行扩容
+                             *      false-> 继续往下(可能为二叉树
+                             */
                             for (Node<K,V> p = f.next; p != null; p = p.next) {
+                                //b:下一个的下标
+                                //
                                 int b = p.hash & n;
                                 if (b != runBit) {
                                     runBit = b;
                                     lastRun = p;
                                 }
                             }
+                            /**
+                             * CASE 7.2.2 加锁继续判断当前hash是否大于0
+                             *      true-> 进行扩容
+                             *      false-> 继续往下(可能为二叉树
+                             */
                             if (runBit == 0) {
                                 ln = lastRun;
                                 hn = null;
@@ -2750,6 +2789,11 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                             setTabAt(tab, i, fwd);
                             advance = true;
                         }
+                        /**
+                         * CASE 7.3 判断当前节点是否是二叉树
+                         *      true-> 进行扩容
+                         *      false->
+                         */
                         else if (f instanceof TreeBin) {
                             TreeBin<K,V> t = (TreeBin<K,V>)f;
                             TreeNode<K,V> lo = null, loTail = null;
@@ -3195,7 +3239,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     first = root = new TreeNode<K,V>(h, k, v, null, null);
                     break;
                 }
-                else if ((ph = p.hash) > h)
+                else if ((ph = p.hash ) > h)
                     dir = -1;
                 else if (ph < h)
                     dir = 1;
