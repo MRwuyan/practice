@@ -20,7 +20,6 @@ public class ThreadLocalDemo {
                     house.saleVolume.remove();
                 }
 
-
             }, String.valueOf(i)).start();
         }
         TimeUnit.MICROSECONDS.sleep(300);
