@@ -2,6 +2,9 @@ package example.offer;
 
 import example.question.ListNode;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Day12 {
     /**
      * 输入：1->2->4, 1->3->4
@@ -27,12 +30,28 @@ public class Day12 {
 
     /**
      * 输入两个链表，找出它们的第一个公共节点。
+     *
      * @param headA
      * @param headB
      * @return
      */
     ListNode getIntersectionNode(ListNode headA, ListNode headB) {
-
+        Set<ListNode> set = new HashSet<>();
+        ListNode temp = headA;
+        while (temp != null) {
+            if (!set.contains(temp)) {
+                set.add(temp);
+            }
+            temp = temp.next;
+        }
+        temp = headB;
+        while (temp!=null) {
+            if (set.contains(temp)) {
+                return temp;
+            }
+            temp = temp.next;
+        }
+        return null;
     }
 
 
