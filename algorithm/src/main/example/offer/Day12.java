@@ -26,29 +26,19 @@ public class Day12 {
     }
 
     /**
-     * 给定一个链表: 1->2->3->4->5, 和 k = 2.
-     *
-     * 返回链表 4->5.
-     * @param head
-     * @param k
+     * 输入两个链表，找出它们的第一个公共节点。
+     * @param headA
+     * @param headB
      * @return
      */
-    public ListNode getKthFromEnd(ListNode head, int k) {
-        ListNode former = head, latter = head;
-        for(int i = 0; i < k; i++)
-            former = former.next;
-        while(former != null) {
-            former = former.next;
-            latter = latter.next;
-        }
-        return latter;
+    ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+
     }
+
 
     public static void main(String[] args) {
         Day12 day12 = new Day12();
         ListNode node = ListNode.getSortNode();
 //        ListNode listNode = day12.mergeTwoLists(node, node);
-        ListNode fromEnd = day12.getKthFromEnd(node, 2);
-        System.out.println(fromEnd);
     }
 }
