@@ -30,6 +30,7 @@ public class Day13 {
      * 输入一个递增排序的数组和一个数字s，在数组中查找两个数，使得它们的和正好是s。如果有多对数字的和等于s，则输出任意一对即可
      * 输入：nums = [2,7,11,15], target = 9
      * 输出：[2,7] 或者 [7,2]
+     *
      * @param nums
      * @param target
      * @return
@@ -38,7 +39,7 @@ public class Day13 {
         for (int i = 0; i < nums.length; i++) {
             for (int j = 1; j < nums.length; j++) {
                 int r = nums[i] + nums[j];
-                if (r<target) {
+                if (r < target) {
                     continue;
                 } else if (r == target) {
                     return new int[]{nums[i], nums[j]};
@@ -48,5 +49,33 @@ public class Day13 {
             }
         }
         return null;
+    }
+
+    /**
+     * 输入一个英文句子，翻转句子中单词的顺序，但单词内字符的顺序不变。为简单起见，标点符号和普通字母一样处理。
+     * 例如输入字符串"I am a student. "，则输出"student. a am I"。
+     *
+     * @param s
+     * @return
+     */
+    public String reverseWords(String s) {
+        String[] strings = s.trim().split(" ");
+        StringBuilder sb = new StringBuilder();
+        for(int i = strings.length-1;i>=0;i--){
+            String sss = strings[i];
+            if(strings[i] == "") continue;
+            sb.append(strings[i].trim());
+            if(i !=0){
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        Day13 day13 = new Day13();
+        String the_sky_is_blue = day13.reverseWords("the sky is blue");
+        System.out.println(the_sky_is_blue);
+
     }
 }
