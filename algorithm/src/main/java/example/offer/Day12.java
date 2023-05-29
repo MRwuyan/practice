@@ -35,7 +35,7 @@ public class Day12 {
      * @param headB
      * @return
      */
-    ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+/*    ListNode getIntersectionNode(ListNode headA, ListNode headB) {
         Set<ListNode> set = new HashSet<>();
         ListNode temp = headA;
         while (temp != null) {
@@ -52,7 +52,7 @@ public class Day12 {
             temp = temp.next;
         }
         return null;
-    }
+    }*/
 
 
     public static void main(String[] args) {

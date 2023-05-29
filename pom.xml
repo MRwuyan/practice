@@ -9,7 +9,6 @@
         <module>Interview</module>
         <module>sourceCode</module>
         <module>algorithm</module>
-        <module>algorithm</module>
     </modules>
 
     <groupId>com.roc.practice</groupId>
