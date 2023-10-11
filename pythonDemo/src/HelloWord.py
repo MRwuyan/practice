@@ -4,3 +4,8 @@ print('The quick brown fox', 'jumps over', 'the lazy dog')
 # print('你输入的是',name)
 
 print(1024 * 768)
+
+print(True,False)
+print(3 > 2)
+
+
