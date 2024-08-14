@@ -1,0 +1,6 @@
+local lunajson = require('lunajson')
+local file = io.open('text.json',"r")
+local data = file:read("*all")
+file:close()
+local tb1 = lunajson.decode(data)
+print(tb1["name"])

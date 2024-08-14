@@ -2570,7 +2570,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                         transferIndex <= 0)
                         break;
                     /**
-                     * CASE 3.1.2+
+                     * CASE 3.1.2
                      */
                     if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1))
                         transfer(tab, nt);

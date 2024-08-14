@@ -26,6 +26,7 @@ function test1()
         print(k .. '=' .. v)
     end
     a3 = {}
+    a3["key"]=''
     print(a3["key"])
     print(a3["none"])
     print(#a3)

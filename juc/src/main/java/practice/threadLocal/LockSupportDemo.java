@@ -13,9 +13,11 @@ public class LockSupportDemo {
 
     public static void main(String[] args) throws InterruptedException {
         m3();
-
     }
-
+    /**
+     *
+     * @throws InterruptedException
+     */
     private static void m3() throws InterruptedException {
         Thread t1 = new Thread(() -> {
             try {
