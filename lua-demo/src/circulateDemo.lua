@@ -18,3 +18,10 @@ end
 a= string.find("www.runoob.com", "runoob")
 print(a)
 
+function fwrite(fmt, ...)  ---> 固定的参数fmt
+return io.write(string.format(fmt, ...))
+end
+
+fwrite("%d runoobd\n" ,1)       --->fmt = "runoob", 没有变长参数。
+fwrite("%d%d\n", 1, 2,3)   --->fmt = "%d%d", 变长参数为 1 和 2
+
