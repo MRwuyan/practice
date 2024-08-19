@@ -1,11 +1,9 @@
 package com.roc.asm.protocol;
 
-
 import com.roc.asm.message.Message;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageCodec;
+import io.netty.handler.codec.ByteToMessageCodec;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -15,13 +13,9 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 @Slf4j
-@ChannelHandler.Sharable
-public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message> {
-
-
+public class MessageCodec extends ByteToMessageCodec<Message> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, Message message, List<Object> list) throws Exception {
-        ByteBuf byteBuf = ctx.alloc().buffer();
+    protected void encode(ChannelHandlerContext channelHandlerContext, Message message, ByteBuf byteBuf) throws Exception {
         //1.4字节的魔数
         byteBuf.writeBytes(new byte[]{1, 2, 3, 4});
         //2.1字节的版本
@@ -40,7 +34,6 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         byteBuf.writeInt(length);
         //7.后去内容的字节数组
         byteBuf.writeBytes(byteArray);
-        list.add(byteBuf);
     }
 
     @Override
@@ -56,6 +49,6 @@ public class MessageCodecSharable extends MessageToMessageCodec<ByteBuf, Message
         Message message = Serializer.Algorithm.Java.deserialize(Message.class, bytes);
         log.info("{},{},{},{},{},{}",magicNum,version,serializerType,messageType,sequenceId,length);
         log.info("{}",message);
-        list.add(message);
+
     }
 }
