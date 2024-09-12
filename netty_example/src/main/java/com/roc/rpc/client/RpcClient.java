@@ -41,7 +41,7 @@ public class RpcClient {
                     }
                 });
         try {
-            Channel channel = bootstrap.connect("localhost", 8080).sync().channel();
+            Channel channel = bootstrap.connect("localhost", 122).sync().channel();
             channel.writeAndFlush(
                     new RpcRequestMessage(
                             1,
